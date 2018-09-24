@@ -20,10 +20,17 @@ func main() {
 	metricName := flag.String("metric-name", "", "")
 	unit := flag.String("unit", "Count", "Cloudwatch metric unit")
 	value := flag.Float64("value", 0, "")
+	resolution := flag.Int64("resolution", 60, "storage resolution for metric in seconds (1 or 60)")
 	flag.Parse()
 
 	if *metricName == "" {
 		fmt.Printf("Please supply metric-name\n\n")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
+	if *resolution != 1 || *resolution != 60 {
+		fmt.Printf("resolution must be either 1 or 60\n\n")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
@@ -49,7 +56,7 @@ func main() {
 			Value: &id,
 		},
 	}
-	metricDatum := constructMetricDatum(*metricName, *value, cloudwatch.StandardUnit(*unit), dimensions)
+	metricDatum := constructMetricDatum(*metricName, *value, *resolution, cloudwatch.StandardUnit(*unit), dimensions)
 	cloudWatch.Publish(metricDatum, *namespace)
 }
 
@@ -72,13 +79,14 @@ func (c CloudWatchService) Publish(metricData []cloudwatch.MetricDatum, namespac
 }
 
 // constructMetricDatum construct cloudwatch data object
-func constructMetricDatum(metricName string, value float64, unit cloudwatch.StandardUnit, dimensions []cloudwatch.Dimension) []cloudwatch.MetricDatum {
+func constructMetricDatum(metricName string, value float64, resolution int64, unit cloudwatch.StandardUnit, dimensions []cloudwatch.Dimension) []cloudwatch.MetricDatum {
 	return []cloudwatch.MetricDatum{
 		cloudwatch.MetricDatum{
-			MetricName: &metricName,
-			Dimensions: dimensions,
-			Unit:       unit,
-			Value:      &value,
+			MetricName:        &metricName,
+			Dimensions:        dimensions,
+			Unit:              unit,
+			Value:             &value,
+			StorageResolution: &resolution,
 		},
 	}
 }

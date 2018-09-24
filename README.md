@@ -26,8 +26,15 @@ Update a single Cloudwatch metric using a single binary (no dependencies).
 * Run command:
 
 ```
-mon-put-data --metric-name "processCount" --namespace "CustomMetrics" --unit "Count" --value 12
+mon-put-data -metric-name "processCount" -namespace "CustomMetrics" -resolution 60 -unit "Count" -value 12
 ```
+
+- `-resolution` can be either `1` for high resolution or `60` for standard resolution
+- `-unit` can be any of:
+```
+Seconds | Microseconds | Milliseconds | Bytes | Kilobytes | Megabytes | Gigabytes | Terabytes | Bits | Kilobits | Megabits | Gigabits | Terabits | Percent | Count | Bytes/Second | Kilobytes/Second | Megabytes/Second | Gigabytes/Second | Terabytes/Second | Bits/Second | Kilobits/Second | Megabits/Second | Gigabits/Second | Terabits/Second | Count/Second | None
+```
+(Ref: https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
 
 ## Credit
 
