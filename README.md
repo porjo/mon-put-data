@@ -54,7 +54,7 @@ Seconds | Microseconds | Milliseconds | Bytes | Kilobytes | Megabytes | Gigabyte
 Want to monitor the average process count for a group of Apache servers. Each server would run this command every 60 seconds:
 
 ```
-mon-put-data -namespace "CustomMetrics" -dimension "Apache Stats=Processes" -metric-name "processCount" -resolution 60 -unit "Count" -value 12
+mon-put-data -namespace "CustomMetrics" -dimension "Apache Stats=Processes" -metric-name "processCount" -resolution 60 -unit "Count" -value $COUNT
 ```
 
 In Cloudwatch an alarm can be created using this metric and specifying 'Average' and '1 Minute' time threshold parameters.
