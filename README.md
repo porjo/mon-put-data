@@ -1,7 +1,11 @@
 
 # mon-put-data
 
-Update a single Cloudwatch metric using a single binary (no dependencies).
+Update a single Cloudwatch metric.
+
+Does not require AWS command line tools (or any other dependencies).
+
+Grab a pre-compiled binary for Linux from the [Releases Page](https://github.com/porjo/mon-put-data/releases), or compile it yourself.
 
 ## How to use
 
@@ -54,7 +58,12 @@ Seconds | Microseconds | Milliseconds | Bytes | Kilobytes | Megabytes | Gigabyte
 Want to monitor the average process count for a group of Apache servers. Each server would run this command every 60 seconds:
 
 ```
-mon-put-data -namespace "CustomMetrics" -dimension "Apache Stats=Processes" -metric-name "processCount" -resolution 60 -unit "Count" -value $COUNT
+mon-put-data -namespace "CustomMetrics" \
+	-dimension "Apache Stats=Processes" \
+	-metric-name "processCount" \
+	-resolution 60 \
+	-unit "Count" \
+	-value $COUNT
 ```
 
 In Cloudwatch an alarm can be created using this metric and specifying 'Average' and '1 Minute' time threshold parameters.
