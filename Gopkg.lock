@@ -2,6 +2,7 @@
 
 
 [[projects]]
+  digest = "1:95def98a589f7f308508edbac4c2061911846fe7545be03f0b350d5487ddc50a"
   name = "github.com/aws/aws-sdk-go-v2"
   packages = [
     "aws",
@@ -23,19 +24,26 @@
     "private/protocol/rest",
     "private/protocol/xml/xmlutil",
     "service/cloudwatch",
-    "service/sts"
+    "service/sts",
   ]
+  pruneopts = "UT"
   revision = "d52522b5f4b95591ff6528d7c54923951aadf099"
   version = "v2.0.0-preview.5"
 
 [[projects]]
+  digest = "1:e22af8c7518e1eab6f2eab2b7d7558927f816262586cd6ed9f349c97a6c285c4"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
+  pruneopts = "UT"
   revision = "0b12d6b5"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "de5d3804ba914f7dce43ad062458fffe707b4de9201bbb413cc30305a5c89a31"
+  input-imports = [
+    "github.com/aws/aws-sdk-go-v2/aws",
+    "github.com/aws/aws-sdk-go-v2/aws/external",
+    "github.com/aws/aws-sdk-go-v2/service/cloudwatch",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
