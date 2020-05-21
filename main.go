@@ -9,12 +9,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/external"
-	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	//	"github.com/aws/aws-sdk-go/aws/external"
+	"github.com/aws/aws-sdk-go/service/cloudwatch"
 )
 
-type dimensions []cloudwatch.Dimension
+type dimensions []*cloudwatch.Dimension
 
 func (i *dimensions) String() string {
 	return fmt.Sprintf("%v", *i)
@@ -23,7 +24,7 @@ func (i *dimensions) String() string {
 func (i *dimensions) Set(value string) error {
 	bits := strings.SplitN(value, "=", 2)
 	if len(bits) == 2 {
-		d := cloudwatch.Dimension{}
+		d := &cloudwatch.Dimension{}
 		d.Name = &bits[0]
 		d.Value = &bits[1]
 		*i = append(*i, d)
@@ -56,11 +57,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	cfg, err := external.LoadDefaultAWSConfig()
-	if err != nil {
-		panic("Unable to load SDK config")
-	}
-	cfg.Region = *region
+	cfg := aws.NewConfig()
+	cfg.Region = region
 	cloudWatch := CloudWatchService{
 		Config: cfg,
 	}
@@ -71,46 +69,46 @@ func main() {
 			log.Fatal(err)
 		}
 		dimensionKey := "InstanceId"
-		dims = []cloudwatch.Dimension{
-			cloudwatch.Dimension{
+		dims = []*cloudwatch.Dimension{
+			&cloudwatch.Dimension{
 				Name:  &dimensionKey,
 				Value: &id,
 			},
 		}
 	}
-	metricDatum := constructMetricDatum(*metricName, *value, *resolution, cloudwatch.StandardUnit(*unit), dims)
+	metricDatum := constructMetricDatum(*metricName, *value, *resolution, *unit, dims)
 	cloudWatch.Publish(metricDatum, *namespace)
 }
 
 // CloudWatchService entity
 type CloudWatchService struct {
-	Config aws.Config
+	Config *aws.Config
 }
 
 // Publish save metrics to cloudwatch using AWS CloudWatch API
-func (c CloudWatchService) Publish(metricData []cloudwatch.MetricDatum, namespace string) {
-	svc := cloudwatch.New(c.Config)
-	req := svc.PutMetricDataRequest(&cloudwatch.PutMetricDataInput{
+func (c CloudWatchService) Publish(metricData []*cloudwatch.MetricDatum, namespace string) {
+	mySession := session.Must(session.NewSession())
+	svc := cloudwatch.New(mySession, c.Config)
+	req, _ := svc.PutMetricDataRequest(&cloudwatch.PutMetricDataInput{
 		MetricData: metricData,
 		Namespace:  &namespace,
 	})
-	_, err := req.Send()
+	err := req.Send()
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 // constructMetricDatum construct cloudwatch data object
-func constructMetricDatum(metricName string, value float64, resolution int64, unit cloudwatch.StandardUnit, dimensions []cloudwatch.Dimension) []cloudwatch.MetricDatum {
-	return []cloudwatch.MetricDatum{
-		cloudwatch.MetricDatum{
-			MetricName:        &metricName,
-			Dimensions:        dimensions,
-			Unit:              unit,
-			Value:             &value,
-			StorageResolution: &resolution,
-		},
+func constructMetricDatum(metricName string, value float64, resolution int64, unit string, dimensions []*cloudwatch.Dimension) []*cloudwatch.MetricDatum {
+	datum := &cloudwatch.MetricDatum{
+		MetricName:        &metricName,
+		Dimensions:        dimensions,
+		Unit:              &unit,
+		Value:             &value,
+		StorageResolution: &resolution,
 	}
+	return []*cloudwatch.MetricDatum{datum}
 }
 
 // GetInstanceID return EC2 instance id
