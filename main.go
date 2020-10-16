@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -89,11 +91,12 @@ type CloudWatchService struct {
 func (c CloudWatchService) Publish(metricData []*cloudwatch.MetricDatum, namespace string) {
 	mySession := session.Must(session.NewSession())
 	svc := cloudwatch.New(mySession, c.Config)
-	req, _ := svc.PutMetricDataRequest(&cloudwatch.PutMetricDataInput{
+	ctx, cancelFn := context.WithTimeout(context.TODO(), 20*time.Second)
+	defer cancelFn()
+	_, err := svc.PutMetricDataWithContext(ctx, &cloudwatch.PutMetricDataInput{
 		MetricData: metricData,
 		Namespace:  &namespace,
 	})
-	err := req.Send()
 	if err != nil {
 		log.Fatal(err)
 	}
